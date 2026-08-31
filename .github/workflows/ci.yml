@@ -1,0 +1,66 @@
+name: GuriMAX Basic CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend-ci:
+    name: Backend API (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.27.0'
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run gofmt
+      run: if [ -n "$(gofmt -l .)" ]; then echo "Go code is not formatted"; exit 1; fi
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Run Go tests
+      run: go test ./...
+
+  frontend-ci:
+    name: Frontend Client (Svelte)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client/frontend
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24.19.0'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: '11.23.0'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run ESLint
+      run: pnpm run lint
+
+    - name: Run Vitest
+      run: pnpm run test
