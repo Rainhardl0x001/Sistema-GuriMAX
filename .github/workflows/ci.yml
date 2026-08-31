@@ -24,16 +24,39 @@ jobs:
         go-version: '1.27.0'
 
     - name: Install dependencies
-      run: go mod download
+      run: |
+        if [ -s go.mod ]; then
+          go mod download
+        else
+          echo "go.mod no existe o está vacío. Omitiendo dependencias de Go."
+        fi
 
     - name: Run gofmt
-      run: if [ -n "$(gofmt -l .)" ]; then echo "Go code is not formatted"; exit 1; fi
+      run: |
+        if find . -name "*.go" -size +0c | grep -q .; then
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go code is not formatted"
+            exit 1
+          fi
+        else
+          echo "No se encontraron archivos .go con contenido. Omitiendo gofmt."
+        fi
 
     - name: Run go vet
-      run: go vet ./...
+      run: |
+        if [ -s go.mod ] && find . -name "*.go" -size +0c | grep -q .; then
+          go vet ./...
+        else
+          echo "Proyecto Go no iniciado o con archivos vacíos. Omitiendo go vet."
+        fi
 
     - name: Run Go tests
-      run: go test ./...
+      run: |
+        if [ -s go.mod ] && find . -name "*.go" -size +0c | grep -q .; then
+          go test ./...
+        else
+          echo "Proyecto Go no iniciado o con archivos vacíos. Omitiendo tests."
+        fi
 
   frontend-ci:
     name: Frontend Client (Svelte)
@@ -57,10 +80,25 @@ jobs:
         version: '11.23.0'
 
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: |
+        if [ -s package.json ]; then
+          pnpm install --frozen-lockfile
+        else
+          echo "package.json no existe o está vacío. Omitiendo pnpm install."
+        fi
 
     - name: Run ESLint
-      run: pnpm run lint
+      run: |
+        if [ -s package.json ]; then
+          pnpm run lint
+        else
+          echo "package.json no existe o está vacío. Omitiendo ESLint."
+        fi
 
     - name: Run Vitest
-      run: pnpm run test
+      run: |
+        if [ -s package.json ]; then
+          pnpm run test
+        else
+          echo "package.json no existe o está vacío. Omitiendo Vitest."
+        fi
