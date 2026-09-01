@@ -1,6 +1,6 @@
-# Validación de consultas SQL y siguiente capa de Clean Architecture
+# Validación de consultas SQL y siguiente capa de Clean Architecture.
 
-**Proyecto:** Sistema POS e inventario GuriMAX  
+**Proyecto:** Sistema POS e inventario GuriMAX para negocios
 **Fecha:** 27 de agosto de 2026  
 **Alcance:** `backend/db/queries/catalog.sql`, `backend/db/queries/sales.sql` y diseño de repositorios/casos de uso.
 
