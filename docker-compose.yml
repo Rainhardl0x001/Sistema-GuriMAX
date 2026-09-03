@@ -6,6 +6,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: America/Santo_Domingo
     ports:
       - "127.0.0.1:${MYSQL_PORT}:3306"
@@ -13,10 +15,11 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/db/migrations/000001_initial_schema.up.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 20
+      start_period: 90s
     networks:
       - gurimax_private
 

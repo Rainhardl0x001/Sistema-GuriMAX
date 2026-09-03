@@ -741,7 +741,7 @@ CREATE TABLE audit_log (
     PRIMARY KEY (id),
     KEY idx_audit_log_entity (entity_type, entity_id, created_at),
     KEY idx_audit_log_actor_date (actor_user_id, created_at),
-    CONSTRAINT fk_audit_log_actor FOREIGN KEY (actor_user_id) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_audit_log_actor FOREIGN KEY (actor_user_id) REFERENCES users(id),
     CONSTRAINT chk_audit_log_actor_or_system CHECK (actor_user_id IS NOT NULL OR actor_role = 'SYSTEM')
 ) ENGINE = InnoDB;
 
