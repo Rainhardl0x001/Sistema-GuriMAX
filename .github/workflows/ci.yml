@@ -62,26 +62,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Create disposable CI environment
-        shell: bash
+      - name: Prepare CI environment
         run: |
           test -s .env.example
           cp .env.example .env
       - name: Validate Docker Compose
         run: docker compose config --quiet
-      - name: Start MySQL and wait for health check
+      - name: Start MySQL
         run: docker compose up -d --wait mysql
-      - name: Show Compose status
+      - name: Show services
         run: docker compose ps
       - name: Verify MySQL connection
-        shell: bash
         run: |
           set -a
           source .env
           set +a
           docker compose exec -T mysql mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'
       - name: Verify initial schema
-        shell: bash
         run: |
           set -a
           source .env
@@ -116,7 +113,7 @@ jobs:
       - name: Build backend image
         if: steps.api-state.outputs.initialized == 'true'
         run: docker build -f backend/Dockerfile -t gurimax-api:ci ./backend
-      - name: Verify image healthcheck command
+      - name: Verify Docker healthcheck command
         if: steps.api-state.outputs.initialized == 'true'
         run: docker run --rm gurimax-api:ci healthcheck
 
@@ -153,19 +150,12 @@ jobs:
         if: steps.frontend-state.outputs.initialized == 'true'
         working-directory: ./client/frontend
         run: pnpm install --frozen-lockfile
-      - name: Run TypeScript check
+      - name: Run frontend checks
         if: steps.frontend-state.outputs.initialized == 'true'
         working-directory: ./client/frontend
-        run: if [ -s tsconfig.json ]; then pnpm exec tsc --noEmit; else echo 'tsconfig.json no existe. Omitiendo TypeScript.'; fi
-      - name: Run ESLint
-        if: steps.frontend-state.outputs.initialized == 'true'
-        working-directory: ./client/frontend
-        run: if node -e 'const p=require("./package.json"); process.exit(p.scripts?.lint ? 0 : 1)'; then pnpm run lint; else echo 'No existe script lint. Omitiendo ESLint.'; fi
-      - name: Run Vitest
-        if: steps.frontend-state.outputs.initialized == 'true'
-        working-directory: ./client/frontend
-        run: if node -e 'const p=require("./package.json"); process.exit(p.scripts?.test ? 0 : 1)'; then pnpm run test -- --run; else echo 'No existe script test. Omitiendo Vitest.'; fi
-      - name: Build frontend
-        if: steps.frontend-state.outputs.initialized == 'true'
-        working-directory: ./client/frontend
-        run: if node -e 'const p=require("./package.json"); process.exit(p.scripts?.build ? 0 : 1)'; then pnpm run build; else echo 'No existe script build. Omitiendo build.'; fi
+        shell: bash
+        run: |
+          if [ -s tsconfig.json ]; then pnpm exec tsc --noEmit; else echo 'Sin tsconfig.json: se omite TypeScript.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.lint ? 0 : 1)'; then pnpm run lint; else echo 'Sin script lint: se omite ESLint.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.test ? 0 : 1)'; then pnpm run test -- --run; else echo 'Sin script test: se omite Vitest.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.build ? 0 : 1)'; then pnpm run build; else echo 'Sin script build: se omite build frontend.'; fi
