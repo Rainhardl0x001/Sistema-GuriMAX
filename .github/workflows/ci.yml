@@ -84,14 +84,14 @@ jobs:
           set -a
           source .env
           set +a
-          docker compose exec -T mysql mysql -h 127.0.0.1 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'
+          docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'
       - name: Verify initial schema
         shell: bash
         run: |
           set -a
           source .env
           set +a
-          tables=$(docker compose exec -T mysql mysql -h 127.0.0.1 -N -B -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SHOW TABLES;')
+          tables=$(docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock -N -B -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SHOW TABLES;')
           if [ -z "$tables" ]; then echo 'La migración inicial no creó tablas.'; exit 1; fi
           echo "$tables"
       - name: Show MySQL logs on failure
