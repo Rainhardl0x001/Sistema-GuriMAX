@@ -2,103 +2,179 @@ name: GuriMAX Basic CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   backend-ci:
     name: Backend API (Go)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ./backend
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.27.0'
-
-    - name: Install dependencies
-      run: |
-        if [ -s go.mod ]; then
-          go mod download
-        else
-          echo "go.mod no existe o está vacío. Omitiendo dependencias de Go."
-        fi
-
-    - name: Run gofmt
-      run: |
-        if find . -name "*.go" -size +0c | grep -q .; then
-          if [ -n "$(gofmt -l .)" ]; then
-            echo "Go code is not formatted"
-            exit 1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Detect backend state
+        id: backend-state
+        shell: bash
+        run: |
+          if [ -s go.mod ] && find . -type f -name '*.go' -size +0c -print -quit | grep -q .; then
+            echo 'initialized=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'initialized=false' >> "$GITHUB_OUTPUT"
+            echo 'Backend aún no iniciado: se omitirán validaciones.'
           fi
-        else
-          echo "No se encontraron archivos .go con contenido. Omitiendo gofmt."
-        fi
+      - name: Download Go dependencies
+        if: steps.backend-state.outputs.initialized == 'true'
+        run: go mod download
+      - name: Check Go formatting
+        if: steps.backend-state.outputs.initialized == 'true'
+        shell: bash
+        run: |
+          files=$(gofmt -l .)
+          if [ -n "$files" ]; then echo "$files"; exit 1; fi
+      - name: Run go vet
+        if: steps.backend-state.outputs.initialized == 'true'
+        run: go vet ./...
+      - name: Run Go tests
+        if: steps.backend-state.outputs.initialized == 'true'
+        run: go test ./...
+      - name: Build API
+        if: steps.backend-state.outputs.initialized == 'true'
+        run: go build ./cmd/api
 
-    - name: Run go vet
-      run: |
-        if [ -s go.mod ] && find . -name "*.go" -size +0c | grep -q .; then
-          go vet ./...
-        else
-          echo "Proyecto Go no iniciado o con archivos vacíos. Omitiendo go vet."
-        fi
+  compose-mysql-ci:
+    name: Docker Compose + MySQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Create disposable CI environment
+        shell: bash
+        run: |
+          cat > .env <<'EOF'
+          MYSQL_ROOT_PASSWORD=ci_root_password
+          MYSQL_DATABASE=gurimax_pos
+          MYSQL_USER=gurimax
+          MYSQL_PASSWORD=app_dev_password
+          MYSQL_PORT=3306
+          EOF
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+      - name: Start MySQL
+        run: docker compose up -d --wait mysql
+      - name: Show services
+        run: docker compose ps
+      - name: Verify MySQL connection
+        shell: bash
+        run: |
+          set -a
+          source .env
+          set +a
+          for i in $(seq 1 20); do
+            if docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock \
+                 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" \
+                 -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'; then
+              echo "MySQL listo."
+              exit 0
+            fi
+            echo "MySQL aún no responde (intento $i/20), reintentando en 3s..."
+            sleep 3
+          done
+          echo "MySQL nunca quedó disponible."
+          exit 1
+      - name: Verify initial schema
+        shell: bash
+        run: |
+          set -a
+          source .env
+          set +a
+          tables=$(docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock -N -B -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SHOW TABLES;')
+          if [ -z "$tables" ]; then echo 'La migración inicial no creó tablas.'; exit 1; fi
+          echo "$tables"
+      - name: Show MySQL logs on failure
+        if: failure()
+        run: docker compose logs mysql
+      - name: Clean Compose
+        if: always()
+        run: docker compose down -v --remove-orphans
 
-    - name: Run Go tests
-      run: |
-        if [ -s go.mod ] && find . -name "*.go" -size +0c | grep -q .; then
-          go test ./...
-        else
-          echo "Proyecto Go no iniciado o con archivos vacíos. Omitiendo tests."
-        fi
+  backend-docker-ci:
+    name: Build Backend Docker Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Detect API source
+        id: api-state
+        shell: bash
+        run: |
+          if [ -s backend/go.mod ] && find backend/cmd/api -type f -name '*.go' -size +0c -print -quit 2>/dev/null | grep -q .; then
+            echo 'initialized=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'initialized=false' >> "$GITHUB_OUTPUT"
+            echo 'API aún no iniciada: se omitirá el build Docker.'
+          fi
+      - name: Build backend image
+        if: steps.api-state.outputs.initialized == 'true'
+        run: docker build -f backend/Dockerfile -t gurimax-api:ci ./backend
+      - name: Verify Docker healthcheck command
+        if: steps.api-state.outputs.initialized == 'true'
+        run: docker run --rm gurimax-api:ci healthcheck
 
   frontend-ci:
     name: Frontend Client (Svelte)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client/frontend
-
+    timeout-minutes: 10
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '24.19.0'
-
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v3
-      with:
-        version: '11.23.0'
-
-    - name: Install dependencies
-      run: |
-        if [ -s package.json ]; then
-          pnpm install --frozen-lockfile
-        else
-          echo "package.json no existe o está vacío. Omitiendo pnpm install."
-        fi
-
-    - name: Run ESLint
-      run: |
-        if [ -s package.json ]; then
-          pnpm run lint
-        else
-          echo "package.json no existe o está vacío. Omitiendo ESLint."
-        fi
-
-    - name: Run Vitest
-      run: |
-        if [ -s package.json ]; then
-          pnpm run test
-        else
-          echo "package.json no existe o está vacío. Omitiendo Vitest."
-        fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Detect frontend state
+        id: frontend-state
+        shell: bash
+        run: |
+          if [ -s client/frontend/package.json ] && [ -s client/frontend/pnpm-lock.yaml ]; then
+            echo 'initialized=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'initialized=false' >> "$GITHUB_OUTPUT"
+            echo 'Frontend aún no iniciado: se omitirán validaciones.'
+          fi
+      - name: Set up pnpm
+        if: steps.frontend-state.outputs.initialized == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.23.0'
+      - name: Set up Node.js
+        if: steps.frontend-state.outputs.initialized == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: pnpm
+          cache-dependency-path: client/frontend/pnpm-lock.yaml
+      - name: Install dependencies
+        if: steps.frontend-state.outputs.initialized == 'true'
+        working-directory: ./client/frontend
+        run: pnpm install --frozen-lockfile
+      - name: Run frontend checks
+        if: steps.frontend-state.outputs.initialized == 'true'
+        working-directory: ./client/frontend
+        shell: bash
+        run: |
+          if [ -s tsconfig.json ]; then pnpm exec tsc --noEmit; else echo 'Sin tsconfig.json: se omite TypeScript.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.lint ? 0 : 1)'; then pnpm run lint; else echo 'Sin script lint: se omite ESLint.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.test ? 0 : 1)'; then pnpm run test -- --run; else echo 'Sin script test: se omite Vitest.'; fi
+          if node -e 'const p=require("./package.json"); process.exit(p.scripts?.build ? 0 : 1)'; then pnpm run build; else echo 'Sin script build: se omite build frontend.'; fi

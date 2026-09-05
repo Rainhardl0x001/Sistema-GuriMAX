@@ -15,7 +15,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/db/migrations/000001_initial_schema.up.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-P", "3306", "--protocol=tcp"]
       interval: 5s
       timeout: 5s
       retries: 20
