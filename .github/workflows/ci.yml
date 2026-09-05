@@ -62,10 +62,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Prepare CI environment
+      - name: Create disposable CI environment
+        shell: bash
         run: |
-          test -s .env.example
-          cp .env.example .env
+          cat > .env <<'EOF'
+          MYSQL_ROOT_PASSWORD=ci_root_password
+          MYSQL_DATABASE=gurimax_pos
+          MYSQL_USER=gurimax
+          MYSQL_PASSWORD=app_dev_password
+          MYSQL_PORT=3306
+          EOF
       - name: Validate Docker Compose
         run: docker compose config --quiet
       - name: Start MySQL
@@ -73,12 +79,14 @@ jobs:
       - name: Show services
         run: docker compose ps
       - name: Verify MySQL connection
+        shell: bash
         run: |
           set -a
           source .env
           set +a
           docker compose exec -T mysql mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'
       - name: Verify initial schema
+        shell: bash
         run: |
           set -a
           source .env
