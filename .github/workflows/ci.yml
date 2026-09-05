@@ -84,7 +84,18 @@ jobs:
           set -a
           source .env
           set +a
-          docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'
+          for i in $(seq 1 20); do
+            if docker compose exec -T mysql mysql --protocol=socket -S /var/run/mysqld/mysqld.sock \
+                 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" \
+                 -e 'SELECT VERSION(), DATABASE(), CURRENT_USER();'; then
+              echo "MySQL listo."
+              exit 0
+            fi
+            echo "MySQL aún no responde (intento $i/20), reintentando en 3s..."
+            sleep 3
+          done
+          echo "MySQL nunca quedó disponible."
+          exit 1
       - name: Verify initial schema
         shell: bash
         run: |
