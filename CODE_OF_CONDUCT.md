@@ -1,8 +1,7 @@
 # Código de Conducta para Contribuidores
 
 Este proyecto adopta y adapta el [Contributor Covenant](https://www.contributor-covenant.org/),
-versión 2.1, uno de los códigos de conducta más utilizados en proyectos de
-código abierto.
+versión 2.1.
 
 ## Nuestro compromiso
 
