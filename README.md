@@ -81,6 +81,19 @@ autorización, las transacciones y el acceso a datos.
 > El CI omite componentes vacíos durante esta etapa. Si un componente
 > iniciado contiene errores reales, la validación debe fallar.
 
+## Contribuidores
+
+<a href="https://github.com/Rainhardl0x001/Sistema-GuriMAX/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Rainhardl0x001/Sistema-GuriMAX" alt="Contribuidores de GuriMAX" />
+</a>
+
+<br>
+<br>
+
+Un enorme agradecimiento a cada persona que ha formado parte de este proyecto. 
+Todas las aportaciones, opiniones y sugerencias —sin importar su tamaño— son de
+gran valor para seguir mejorando. ¡Gracias por sumar!
+
 ## Arquitectura
 
 ```text
@@ -382,19 +395,6 @@ vigente.
 
 Si encuentras una vulnerabilidad, no abras un issue público. Sigue el
 proceso de divulgación privada descrito en [`SECURITY.md`](SECURITY.md).
-
-## Contribuidores
-
-<a href="https://github.com/Rainhardl0x001/Sistema-GuriMAX/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Rainhardl0x001/Sistema-GuriMAX" alt="Contribuidores de GuriMAX" />
-</a>
-
-¿Contribuiste con código, documentación o pruebas? Tu avatar aparecerá aquí
-automáticamente en cuanto tengas al menos un commit fusionado a `main`.
-
-> [!NOTE]
-> Esta imagen se genera a partir de la API pública de GitHub, por lo que
-> solo mostrará datos una vez que el repositorio sea público.
 
 ## Documentación
 
