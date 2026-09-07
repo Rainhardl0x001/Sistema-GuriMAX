@@ -42,6 +42,7 @@ mediante una arquitectura evolutiva y mantenible.
 - [Estructura](#estructura)
 - [Roadmap](#roadmap)
 - [Contribución](#contribución)
+- [Seguridad](#seguridad)
 - [Contribuidores](#contribuidores)
 - [Documentación](#documentación)
 - [Licencia](#licencia)
@@ -328,6 +329,11 @@ Sistema-GuriMAX/
 ├── documentation/
 ├── .env.example
 ├── .gitignore
+├── CLA.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── SECURITY.md
 ├── docker-compose.yml
 └── README.md
 ```
@@ -361,32 +367,26 @@ Sistema-GuriMAX/
 
 ## Contribución
 
-Trabaja en ramas separadas de `main`:
+GuriMAX sigue Trunk-Based Development ligero: ramas de vida corta,
+Pull Requests pequeños hacia `main`, y revisión obligatoria para cambios
+que afecten dinero, inventario, caja, crédito, permisos o migraciones.
 
-```bash
-git switch main
-git pull origin main
-git switch -c feature/nombre-de-la-tarea
-```
+La guía completa —convención de ramas, política de migraciones, CI
+obligatorio y formato de commits— está en [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-Antes de abrir un Pull Request:
-
-```bash
-git status
-git diff --check
-docker compose config --quiet
-go -C backend test ./...
-```
-
-Los cambios de esquema deben incluir la migración correspondiente y, cuando
-sea necesario, su migración inversa.
-
-Al abrir un Pull Request, aceptas los términos del [Contributor License
-Agreement](CLA.md), que otorga al Proyecto los derechos necesarios para
-operar bajo la Business Source License 1.1 vigente.
+Antes de participar, revisa el [Código de Conducta](CODE_OF_CONDUCT.md).
+Al abrir un Pull Request, aceptas los términos del
+[Contributor License Agreement](CLA.md), que otorga al Proyecto los
+derechos necesarios para operar bajo la Business Source License 1.1
+vigente.
 
 > [!WARNING]
 > Nunca subas `.env`, contraseñas, tokens ni claves privadas.
+
+## Seguridad
+
+Si encuentras una vulnerabilidad, no abras un issue público. Sigue el
+proceso de divulgación privada descrito en [`SECURITY.md`](SECURITY.md).
 
 ## Contribuidores
 
