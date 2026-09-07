@@ -121,11 +121,6 @@ autorización, las transacciones y el acceso a datos.
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/Rainhardl0x001/Sistema-GuriMAX/backend)](https://goreportcard.com/report/github.com/Rainhardl0x001/Sistema-GuriMAX/backend)
 
-> [!NOTE]
-> Go Report Card analiza el módulo Go una vez que el repositorio es público.
-> Si el badge no carga por estar el módulo en `backend/` en lugar de la
-> raíz, se puede omitir sin afectar el resto del documento.
-
 ## Requisitos
 
 - Git
