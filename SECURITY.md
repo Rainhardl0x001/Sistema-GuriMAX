@@ -14,8 +14,7 @@ En su lugar, usa uno de estos dos canales privados:
 
 1. **Correo electrónico:** [rainhardl0x001@proton.me](mailto:rainhardl0x001@proton.me)
 2. **GitHub Private Vulnerability Reporting:** desde la pestaña
-   [Security](../../security/advisories/new) de este repositorio, si está
-   habilitada, puedes abrir un aviso privado directamente en GitHub sin
+   [Security](../../security/advisories/new) de este repositorio, puedes abrir un aviso privado directamente en GitHub sin
    necesidad de correo.
 
 Incluye, en la medida de lo posible:
