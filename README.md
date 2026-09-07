@@ -12,7 +12,7 @@ mediante una arquitectura evolutiva y mantenible.
 [![MySQL](https://img.shields.io/badge/MySQL-9.7.2-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![SQLC](https://img.shields.io/badge/SQLC-code%20generation-4B8BBE)](https://sqlc.dev/)
-[![License](https://img.shields.io/github/license/Rainhardl0x001/Sistema-GuriMAX)](#licencia)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL%201.1-informational?logo=gnu&logoColor=white)](#licencia)
 [![Last Commit](https://img.shields.io/github/last-commit/Rainhardl0x001/Sistema-GuriMAX)](https://github.com/Rainhardl0x001/Sistema-GuriMAX/commits/main)
 [![Issues](https://img.shields.io/github/issues/Rainhardl0x001/Sistema-GuriMAX)](https://github.com/Rainhardl0x001/Sistema-GuriMAX/issues)
 
@@ -348,7 +348,7 @@ Sistema-GuriMAX/
 - [ ] Crear repositorios, transacciones y casos de uso
 - [ ] Implementar identidad, catálogo e inventario
 - [ ] Implementar autorización contextual y auditoría para operaciones
-      sensibles (caja, crédito, inventario)
+       sensibles (caja, crédito, inventario)
 - [ ] Añadir pruebas unitarias y de integración
 - [ ] Construir los endpoints reales del POS
 
@@ -424,7 +424,7 @@ Consulta el archivo [`LICENSE`](LICENSE) para los términos completos.
 - [Documentación oficial de Docker Compose](https://docs.docker.com/compose/)
 - [Imagen oficial de MySQL para Docker](https://hub.docker.com/_/mysql)
 - [Documentación oficial de Go](https://go.dev/doc/)
-- [Documentación oficial de SQLC](https://docs.sqlc.dev/)
+- [Documentación oficial de SQLC](https://sqlc.dev/)
 - [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 - [sqlc-dev/sqlc](https://github.com/sqlc-dev/sqlc)
 - [Documentación de GitHub sobre README](https://docs.github.com/es/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
